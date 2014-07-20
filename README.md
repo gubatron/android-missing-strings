@@ -2,11 +2,11 @@
 
 **ams** (android-missing-strings) is a simple command line reporting tool to know what strings need to be translated on an android project.
 
-The output of ams is a pdf file friendly to a non-coding person who can be in charge of managing the translators involved in the project.
+The output of ams is a text file friendly to a non-coding person who can be in charge of managing the translators involved in the project.
 
 ## Requirements
  - Python 2.6+
- - [pyPDF](https://code.google.com/p/pyfpdf/)
+
 
 ## Installation
 Make sure you have the **ams** source folder on your $PATH environment variable.
@@ -29,7 +29,7 @@ ams [-l xx[,yy,zz...]] -o <output_file>
                          If this parameter is ommited, a report with every language file found will be created.
 
 
-    -o --oFile           Specify the output file name for the PDF report
+    -o --oFile           Specify the output file name for the text report
 ```
 
 ## License

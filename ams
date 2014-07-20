@@ -3,7 +3,6 @@ import re
 import os
 import sys
 import getopt
-from fpdf import FPDF
 
 PATTERN=re.compile(r'<string name="(.*?)".*>(.*?)</string>', re.I | re.MULTILINE)
 
@@ -83,7 +82,7 @@ def usage():
                          If this parameter is ommited, a report with every language file found will be created.
 
 
-    -o --oFile           Specify the output file name for the PDF report
+    -o --oFile           Specify the output file name for the report
 
     Copyright (c) 2014 - The Mit License (MIT)
 
@@ -136,8 +135,7 @@ def main(argv):
     xmlOriginalFile="./res/values/strings.xml"
     originalDict=MissingStringsReport.readXML(xmlOriginalFile)
 
-    pdf=FPDF()
-    pdf.add_page()
+    fd = open(outputFile,'w')
 
     for xmlFilePath in xmlFilePaths:
         filePath = xmlFilePath.strip()
@@ -145,19 +143,17 @@ def main(argv):
         if filePath != xmlOriginalFile:
             report = MissingStringsReport(filePath, originalDict)
             print "Generating report for " + filePath + "..."
-            pdf.set_font('Arial','B',12)
-            pdf.cell(100,10,"Language file: " + filePath,0,0)
-            pdf.cell(40,10,"%d%% completed " % (report.getCompletePercentage()),0,1,'R')
-            pdf.cell(40,10,"Missing elements: ",0,1)
+            fd.write("Language file: " + filePath + "\n")
+            fd.write("%d%% completed " % (report.getCompletePercentage()) + "\n")
+            fd.write("Missing elements: " + "\n\n")
 
             for missingKey in report.getMissingKeys():
-                pdf.set_font('Arial','I',8)
                 tag = "<string name=\"%s\">%s</string>" % (missingKey, originalDict[missingKey])
-                pdf.multi_cell(190,10,tag,1,1)
+                fd.write(tag+"\n")
 
-            pdf.add_page()
+            fd.write("========================================================================\n\n")
 
-    pdf.output(outputFile,'F')
+    fd.close()
     print "\nSuccess: Android Missing String report ready at " + outputFile
 
 
