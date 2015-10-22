@@ -48,9 +48,10 @@ class MissingStringsReport:
         f=open(fileName,'r')
         line = f.readline()
         while line!="":
-            matcher = PATTERN.search(line)
-            if matcher != None:
-                result[matcher.group(1)]=matcher.group(2)
+            if 'translatable="false"' not in line:
+                matcher = PATTERN.search(line)
+                if matcher != None:
+                    result[matcher.group(1)]=matcher.group(2)
             line = f.readline()
         f.close()
         return result
