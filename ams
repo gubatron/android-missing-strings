@@ -4,7 +4,7 @@ import os
 import sys
 import getopt
 
-PATTERN=re.compile(r'<string name="(.*?)".*>(.*?)</string>', re.I | re.MULTILINE)
+PATTERN=re.compile(r'<string name="(.*?)">(.*?)</string>', re.I | re.MULTILINE)
 
 class MissingStringsReport:
     filePath = None
