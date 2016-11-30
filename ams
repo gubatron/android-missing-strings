@@ -19,11 +19,16 @@ class MissingStringsReport:
         self.stringsFilePath = stringsFilePath
         self.originalStringsDict = originalStringsDict
         self.myStringsDict = MissingStringsReport.readXML(self.stringsFilePath)
-        self.missingKeys = MissingStringsReport.findMissingKeys(self.originalStringsDict, self.myStringsDict)
+        self.missingKeys   = MissingStringsReport.findMissingKeys(self.originalStringsDict, self.myStringsDict)
+        self.leftOverKeys  = MissingStringsReport.findLeftoverKeys(self.originalStringsDict, self.myStringsDict)
 
     def getMissingKeys(self):
         '''Returns a list with the missing keys.'''
         return self.missingKeys
+
+    def getLeftoverKeys(self):
+        '''Returns a list of left over keys that should be deleted'''
+        return self.leftOverKeys
 
     def getMyStringsDict(self):
         return self.myStringsDict
@@ -40,6 +45,16 @@ class MissingStringsReport:
             if k not in incompleteDict:
                 missingKeys.append(k)
         return missingKeys
+
+    @staticmethod
+    def findLeftoverKeys(fullDict, incompleteDict):
+        '''Given the original (fullDict) strings dictionary, this returns a list of the keys that no longer exist on the
+           full dictionary but still exist on the incompleteDict'''
+        leftOverKeys = []
+        for k in incompleteDict:
+            if k not in fullDict:
+                leftOverKeys.append(k)
+        return leftOverKeys
 
     @staticmethod
     def readXML(fileName):
@@ -146,20 +161,24 @@ def main(argv):
             print "Generating report for " + filePath + "..."
             fd.write("Language file: " + filePath + "\n")
             fd.write("%d%% completed " % (report.getCompletePercentage()) + "\n")
-            fd.write("Missing elements: " + "\n\n")
 
-            for missingKey in report.getMissingKeys():
-                tag = "<string name=\"%s\">%s</string>" % (missingKey, originalDict[missingKey])
-                fd.write(tag+"\n")
-
-            fd.write("========================================================================\n\n")
-
+            if len(report.getMissingKeys()) > 0:
+                fd.write("Missing elements: \n\n")
+                for missingKey in report.getMissingKeys():
+                    tag = "<string name=\"%s\">%s</string>\n" % (missingKey, originalDict[missingKey])
+                    fd.write(tag)
+                fd.write("========================================================================\n\n")
+            if len(report.getLeftoverKeys()) > 0:
+                fd.write("Leftover elements: \n\n")
+                for leftoverKey in report.getLeftoverKeys():
+                    tag = "<string name=\"%s\">...</string>\n" % (leftoverKey)
+                    fd.write(tag)
+                fd.write("========================================================================\n")
+        fd.write("\n-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.\n\n");
     fd.close()
     print "\nSuccess: Android Missing String report ready at " + outputFile
 
-
 if __name__ == '__main__':
-    
     main(sys.argv[1:])
 
 
