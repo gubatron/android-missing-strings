@@ -74,7 +74,7 @@ class MissingStringsReport:
 
 def getStringsFilePaths():
     '''Gets all the relative paths to strings.xml files in a list.'''
-    p = os.popen("find . | grep strings.xml")
+    p = os.popen("find ./res | grep strings.xml")
     filesPath = p.readlines()
     p.close()
     return filesPath
