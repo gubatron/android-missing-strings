@@ -3,6 +3,7 @@ import re
 import os
 import sys
 import getopt
+from time import gmtime
 
 PATTERN=re.compile(r'<string name="(.*?)">(.*?)</string>', re.I | re.MULTILINE)
 
@@ -79,12 +80,35 @@ def getStringsFilePaths():
     p.close()
     return filesPath
 
+def cleanLeftoverTranslations(filePath, leftOverKeys):
+    print "Cleaning " + str(len(leftOverKeys)) + " leftover translations in " + filePath + "\n"
+    print leftOverKeys
+    print "="*80
+
+    f = open(filePath, 'r')
+    lines = []
+    for line in f:
+        lines.append(line)
+    f.close()
+
+    f = open(filePath, 'w')
+    for line in lines:
+        matcher = PATTERN.search(line)
+        if matcher == None:
+            f.write(line)
+        else:
+            key = matcher.group(1)
+            if key not in leftOverKeys:
+                f.write(line)
+
+    f.close()
+
 def usage():
     usage = """
     ams - Android Missing Strings reporting tool.
     
     Usage:
-    ams [-l xx[,yy,zz...]] -o <output_file>
+    ams [-l xx[,yy,zz...]] [--cleanleftovers] -o <output_file>
 
     Options:
     -h --help            Print this help
@@ -100,20 +124,23 @@ def usage():
 
     -o --oFile           Specify the output file name for the report
 
-    Copyright (c) 2014 - The Mit License (MIT)
+    --cleanleftovers     Removes left over translations on other language files
+
+    Copyright (c) 2014-%d - The Mit License (MIT)
 
     Authors:
     Angel Leon <gubatron@gmail.com>
     Katay Santos <kataysantos@gmail.com>
 
-    """
+    """ % (gmtime()[0])
     print usage
 
 def main(argv):
     xmlFilePaths=[]
     outputFile = ''
+    cleanLeftovers = False
     try:
-        opts, args = getopt.getopt(argv, "ho:l:",["ofile=","lang="])
+        opts, args = getopt.getopt(argv, "ho:l:",["ofile=","lang=","cleanleftovers"])
     except getopt.GetoptError:
         print "unhandled option"
         usage()
@@ -139,6 +166,8 @@ def main(argv):
                    xmlFilePaths.append("./res/values-" + l + "/strings.xml")
             else:
                 xmlFilePaths=["./res/values-" + arg + "/strings.xml"]
+        if opt in ("--cleanleftovers"):
+            cleanLeftovers = True
 
     if outputFile == '':
         usage()
@@ -153,11 +182,17 @@ def main(argv):
 
     fd = open(outputFile,'w')
 
+    # in case we're going to clean up, we don't need to re-calculate reports
+    # if we keep them in this dictionary (path -> MissingStringReport)
+    missingStringReports = {}
+
     for xmlFilePath in xmlFilePaths:
         filePath = xmlFilePath.strip()
         
         if filePath != xmlOriginalFile:
             report = MissingStringsReport(filePath, originalDict)
+            if cleanLeftovers:
+                missingStringReports[filePath] = report
             print "Generating report for " + filePath + "..."
             fd.write("Language file: " + filePath + "\n")
             fd.write("%d%% completed " % (report.getCompletePercentage()) + "\n")
@@ -178,7 +213,15 @@ def main(argv):
     fd.close()
     print "\nSuccess: Android Missing String report ready at " + outputFile
 
+    if cleanLeftovers:
+        print ""
+        print "="*80
+        print ""
+        for xmlFilePath in xmlFilePaths:
+            filePath = xmlFilePath.strip()
+            if filePath != xmlOriginalFile:
+                report = missingStringReports[filePath]
+                cleanLeftoverTranslations(filePath, report.getLeftoverKeys())
+
 if __name__ == '__main__':
     main(sys.argv[1:])
-
-
