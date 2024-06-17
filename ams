@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-# authors: Angel Leon (@gubatron), Katay Santos (@cateye)
+# authors: Angel Leon (@gubatron), Katay Santos (@cateye), Bohdan Horbeshko (@bodqhrohro)
 import re
 import os
 import sys
 import getopt
 from time import gmtime
-
-PATTERN=re.compile(r'<string name="(.*?)">(.*?)</string>', re.I | re.MULTILINE)
+import xml.etree.ElementTree as ET
 
 class MissingStringsReport:
     filePath = None
@@ -61,16 +60,11 @@ class MissingStringsReport:
     @staticmethod
     def readXML(fileName):
         result={}
-        global PATTERN
-        f=open(fileName,'r')
-        line = f.readline()
-        while line!="":
-            if 'translatable="false"' not in line:
-                matcher = PATTERN.search(line)
-                if matcher != None:
-                    result[matcher.group(1)]=matcher.group(2)
-            line = f.readline()
-        f.close()
+        tree = ET.parse(fileName)
+        root = tree.getroot()
+        for string in root.findall('string'):
+            if 'translatable' not in string.attrib or string.attrib['translatable'] != 'False':
+                result[string.attrib['name']] = string.text
         return result
 
 
@@ -86,23 +80,16 @@ def cleanLeftoverTranslations(filePath, leftOverKeys):
     print leftOverKeys
     print "="*80
 
-    f = open(filePath, 'r')
-    lines = []
-    for line in f:
-        lines.append(line)
-    f.close()
+    tree = ET.parse(filePath)
+    root = tree.getroot()
 
-    f = open(filePath, 'w')
-    for line in lines:
-        matcher = PATTERN.search(line)
-        if matcher == None:
-            f.write(line)
-        else:
-            key = matcher.group(1)
-            if key not in leftOverKeys:
-                f.write(line)
+    for string in root.findall('string'):
+        if string.attrib['name'] in leftOverKeys:
+            root.remove(string)
 
-    f.close()
+    tmpFilePath = filePath + '.tmp'
+    tree.write(tmpFilePath, encoding='utf-8', xml_declaration=True)
+    os.rename(tmpFilePath, filePath)
 
 def usage():
     usage = """
@@ -202,13 +189,13 @@ def main(argv):
                 fd.write("Missing elements: \n\n")
                 for missingKey in report.getMissingKeys():
                     tag = "<string name=\"%s\">%s</string>\n" % (missingKey, originalDict[missingKey])
-                    fd.write(tag)
+                    fd.write(tag.encode('utf-8', 'ignore'))
                 fd.write("========================================================================\n\n")
             if len(report.getLeftoverKeys()) > 0:
                 fd.write("Leftover elements: \n\n")
                 for leftoverKey in report.getLeftoverKeys():
-                    tag = "<string name=\"%s\">...</string>\n" % (leftoverKey)
-                    fd.write(tag)
+                    tag = u"<string name=\"%s\">...</string>\n" % (leftoverKey)
+                    fd.write(tag.encode('utf-8', 'ignore'))
                 fd.write("========================================================================\n")
         fd.write("\n-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.\n\n");
     fd.close()
