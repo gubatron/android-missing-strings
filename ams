@@ -190,13 +190,13 @@ def main(argv):
                 fd.write("Missing elements: \n\n")
                 for missingKey in report.getMissingKeys():
                     tag = "<string name=\"%s\">%s</string>\n" % (missingKey, originalDict[missingKey])
-                    fd.write(tag.encode('utf-8', 'ignore'))
+                    fd.write(tag)
                 fd.write("========================================================================\n\n")
             if len(report.getLeftoverKeys()) > 0:
                 fd.write("Leftover elements: \n\n")
                 for leftoverKey in report.getLeftoverKeys():
                     tag = u"<string name=\"%s\">...</string>\n" % (leftoverKey)
-                    fd.write(tag.encode('utf-8', 'ignore'))
+                    fd.write(tag)
                 fd.write("========================================================================\n")
         fd.write("\n-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.\n\n");
     fd.close()
