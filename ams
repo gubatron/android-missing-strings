@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # authors: Angel Leon (@gubatron), Katay Santos (@cateye)
 import re
 import os
@@ -82,9 +82,9 @@ def getStringsFilePaths():
     return filesPath
 
 def cleanLeftoverTranslations(filePath, leftOverKeys):
-    print "Cleaning " + str(len(leftOverKeys)) + " leftover translations in " + filePath + "\n"
-    print leftOverKeys
-    print "="*80
+    print("Cleaning " + str(len(leftOverKeys)) + " leftover translations in " + filePath + "\n")
+    print(leftOverKeys)
+    print("="*80)
 
     f = open(filePath, 'r')
     lines = []
@@ -134,7 +134,7 @@ def usage():
     Katay Santos <kataysantos@gmail.com>
 
     """ % (gmtime()[0])
-    print usage
+    print(usage)
 
 def main(argv):
     xmlFilePaths=[]
@@ -143,13 +143,13 @@ def main(argv):
     try:
         opts, args = getopt.getopt(argv, "ho:l:",["ofile=","lang=","cleanleftovers"])
     except getopt.GetoptError:
-        print "unhandled option"
+        print("unhandled option")
         usage()
         sys.exit(2)
 
     if len(opts) == 0:
         usage()
-        print "Error: missing parameters."
+        print("Error: missing parameters.")
         sys.exit(2)
 
     for opt, arg in opts:
@@ -172,7 +172,7 @@ def main(argv):
 
     if outputFile == '':
         usage()
-        print "Error: missing -o (output file) parameter."
+        print("Error: missing -o (output file) parameter.")
         sys.exit(2)
 
     if len(xmlFilePaths) == 0:
@@ -194,7 +194,7 @@ def main(argv):
             report = MissingStringsReport(filePath, originalDict)
             if cleanLeftovers:
                 missingStringReports[filePath] = report
-            print "Generating report for " + filePath + "..."
+            print("Generating report for " + filePath + "...")
             fd.write("Language file: " + filePath + "\n")
             fd.write("%d%% completed " % (report.getCompletePercentage()) + "\n")
 
@@ -212,12 +212,12 @@ def main(argv):
                 fd.write("========================================================================\n")
         fd.write("\n-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.\n\n");
     fd.close()
-    print "\nSuccess: Android Missing String report ready at " + outputFile
+    print("\nSuccess: Android Missing String report ready at " + outputFile)
 
     if cleanLeftovers:
-        print ""
-        print "="*80
-        print ""
+        print("")
+        print("="*80)
+        print("")
         for xmlFilePath in xmlFilePaths:
             filePath = xmlFilePath.strip()
             if filePath != xmlOriginalFile:
